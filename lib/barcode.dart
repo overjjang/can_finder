@@ -1,9 +1,13 @@
+import 'dart:typed_data'; // WriteBuffer를 위해 추가
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
+import 'package:google_mlkit_commons/google_mlkit_commons.dart'; // InputImageData 관련
 import 'package:permission_handler/permission_handler.dart';
 
 class BarcodeScannerPage extends StatefulWidget {
+  const BarcodeScannerPage({Key? key}) : super(key: key); // key 추가
+
   @override
   _BarcodeScannerPageState createState() => _BarcodeScannerPageState();
 }
@@ -25,7 +29,7 @@ class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
       await _initializeCamera();
       _barcodeScanner = BarcodeScanner(); // 바코드 인식기 생성
     } else {
-      print('카메라 권한 거부됨');
+      debugPrint('카메라 권한 거부됨'); // print 대신 debugPrint
     }
   }
 
@@ -76,11 +80,11 @@ class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
         for (Barcode barcode in barcodes) {
           final value = barcode.rawValue;
           if (value != null) {
-            print("📦 바코드 내용: $value"); // 바코드 출력
+            debugPrint("📦 바코드 내용: $value"); // print 대신 debugPrint
           }
         }
       } catch (e) {
-        print('에러 발생: $e');
+        debugPrint('에러 발생: $e'); // print 대신 debugPrint
       }
 
       _isDetecting = false;
@@ -103,7 +107,7 @@ class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text("바코드 스캐너")),
+      appBar: AppBar(title: const Text("바코드 스캐너")),
       body: CameraPreview(_cameraController),
     );
   }
