@@ -1,105 +1,170 @@
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:camera/camera.dart';
+import 'package:permission_handler/permission_handler.dart';
 
-void main() => runApp(MyApp());
+List<Color> accessibleColors = [
+  Colors.black,
+  Colors.white,
+  Colors.yellow,
+  Colors.blue,
+  Colors.red,
+  Colors.green,
+];
 
-class MyApp extends StatefulWidget {
-  @override
-  _MyAppState createState() => _MyAppState();
+List<CameraDescription> cameras = [];
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  cameras = await availableCameras();
+  runApp(MyApp());
 }
 
-class _MyAppState extends State<MyApp> {
-  Color backgroundColor = Colors.black;
-  Color buttonColor = Colors.yellow;
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: '시각장애인용 앱',
+      debugShowCheckedModeBanner: false,
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: [
+        const Locale('ko', ''), // 한국어
+        const Locale('en', ''), // 영어
+      ],
+      home: HomeScreen(),
+    );
+  }
+}
 
-  final List<Map<String, dynamic>> accessibleColors = [
-    {"name": "노랑", "color": Colors.yellow},
-    {"name": "흰색", "color": Colors.white},
-    {"name": "검정", "color": Colors.black},
-    {"name": "파랑", "color": Colors.blue},
-    {"name": "주황", "color": Colors.orange},
-  ];
+class HomeScreen extends StatefulWidget {
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
 
-  final ImagePicker _picker = ImagePicker();
+class _HomeScreenState extends State<HomeScreen> {
+  CameraController? controller;
+  Color selectedColor = Colors.blue;
+  Color backgroundColor = Colors.white;
 
-  void _openCamera() async {
-    final XFile? photo = await _picker.pickImage(source: ImageSource.camera);
-    if (photo != null) {
-      // 카메라로 찍은 사진 처리 가능
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('사진을 찍었습니다.')),
+  @override
+  void initState() {
+    super.initState();
+    initCamera();
+  }
+
+  Future<void> initCamera() async {
+    await Permission.camera.request();
+    if (cameras.isNotEmpty) {
+      controller = CameraController(
+        cameras[0],
+        ResolutionPreset.medium,
+        enableAudio: false,
       );
+      await controller!.initialize();
+      setState(() {});
     }
   }
 
-  void _showColorPicker() {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => Container(
-        padding: EdgeInsets.all(16),
-        color: backgroundColor,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: accessibleColors.map((item) {
-            return ListTile(
-              leading: CircleAvatar(backgroundColor: item['color']),
-              title: Text(
-                item['name'],
-                style: TextStyle(color: buttonColor),
-              ),
-              onTap: () {
-                setState(() {
-                  backgroundColor = item['color'];
-                  buttonColor = item['color'] == Colors.black ? Colors.white : Colors.black;
-                });
-                Navigator.pop(context);
-              },
-            );
-          }).toList(),
-        ),
-      ),
-    );
+  @override
+  void dispose() {
+    controller?.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        backgroundColor: backgroundColor,
-        appBar: AppBar(
-          title: Text('시각장애인용 카메라 앱'),
-          backgroundColor: buttonColor,
-          foregroundColor: backgroundColor == Colors.black ? Colors.white : Colors.black,
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: _openCamera,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: buttonColor,
-                  foregroundColor: backgroundColor == Colors.black ? Colors.white : Colors.black,
-                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-                  textStyle: TextStyle(fontSize: 18),
-                ),
-                child: Text('사진 찍기'),
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _showColorPicker,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: buttonColor,
-                  foregroundColor: backgroundColor == Colors.black ? Colors.white : Colors.black,
-                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-                  textStyle: TextStyle(fontSize: 18),
-                ),
-                child: Text('설정'),
-              ),
-            ],
+    return Scaffold(
+      backgroundColor: backgroundColor,
+      body: Column(
+        children: [
+          Expanded(
+            flex: 2,
+            child: controller != null && controller!.value.isInitialized
+                ? CameraPreview(controller!)
+                : Center(child: CircularProgressIndicator()),
           ),
-        ),
+          Expanded(
+            flex: 1,
+            child: Container(
+              width: double.infinity,
+              color: backgroundColor,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      // TODO: 바코드 스캔 로직 추가 가능
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: selectedColor,
+                      foregroundColor: Colors.white,
+                      minimumSize: Size(200, 60),
+                    ),
+                    child: Text('촬영'),
+                  ),
+                  SizedBox(height: 20),
+                  ElevatedButton.icon(
+                    onPressed: () => _openColorSettings(context),
+                    icon: Icon(Icons.settings),
+                    label: Text('설정'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey[800],
+                      foregroundColor: Colors.white,
+                      minimumSize: Size(200, 60),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
+    );
+  }
+
+  void _openColorSettings(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text('색상 설정'),
+          content: Wrap(
+            spacing: 10,
+            children: accessibleColors.map((color) {
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    selectedColor = color;
+                    backgroundColor =
+                    color == Colors.black ? Colors.white : Colors.black;
+                  });
+                  Navigator.of(dialogContext).pop();
+                },
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  margin: EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: selectedColor == color ? Colors.white : Colors.grey,
+                      width: 2,
+                    ),
+                  ),
+                  child: selectedColor == color
+                      ? Icon(Icons.check, color: Colors.white)
+                      : null,
+                ),
+              );
+            }).toList(),
+          ),
+        );
+      },
     );
   }
 }
