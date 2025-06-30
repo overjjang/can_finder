@@ -1,4 +1,4 @@
-package com.example.can_fluter_finder
+package com.example.can_finder
 
 import io.flutter.embedding.android.FlutterActivity
 
