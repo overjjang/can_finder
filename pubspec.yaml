@@ -1,9 +1,6 @@
 name: can_finder
 description: A Flutter app for detecting cans.
-# The following line prevents the package from being accidentally published to
-# pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-
+publish_to: 'none'
 version: 1.0.0+1
 
 environment:
@@ -12,32 +9,25 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  tflite: ^1.1.2
+  cupertino_icons: ^1.0.8
   image_picker: ^0.8.5+3
   camera: ^0.10.5+2
-  google_ml_kit: ^0.16.2
   flutter_tts: ^3.7.0
-  cupertino_icons: ^1.0.8
-  google_mlkit_barcode_scanning: ^0.10.0  # 바코드 인식
-  permission_handler: ^11.0.0              # 권한 요청
+  permission_handler: ^11.0.0
+
+  # ML Kit 관련
+  google_ml_kit: ^0.16.2
+  google_mlkit_barcode_scanning: ^0.10.0
+  google_mlkit_smart_reply: ^0.10.0 # 💥 직접 명시해서 오류 제거
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
 
+# 🛠️ 충돌 방지용 override
+dependency_overrides:
+  google_mlkit_smart_reply: ^0.10.0
+
 flutter:
   uses-material-design: true
-
-  # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
-
-  # To add custom fonts to your application, add a fonts section here:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
