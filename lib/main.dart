@@ -3,6 +3,9 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:camera/camera.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
+import 'package:flutter_tts/flutter_tts.dart';
+
 List<Color> accessibleColors = [
   Colors.black,
   Colors.white,
@@ -50,9 +53,15 @@ class _HomeScreenState extends State<HomeScreen> {
   Color selectedColor = Colors.blue;
   Color backgroundColor = Colors.white;
 
+  late final BarcodeScanner barcodeScanner;
+  final FlutterTts flutterTts = FlutterTts();
+
+  bool isProcessing = false;
+
   @override
   void initState() {
     super.initState();
+    barcodeScanner = BarcodeScanner();
     initCamera();
   }
 
@@ -72,7 +81,45 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     controller?.dispose();
+    barcodeScanner.close();
+    flutterTts.stop();
     super.dispose();
+  }
+
+  Future<void> scanBarcode() async {
+    if (controller == null || !controller!.value.isInitialized || isProcessing) return;
+
+    setState(() {
+      isProcessing = true;
+    });
+
+    try {
+      final XFile file = await controller!.takePicture();
+
+      final inputImage = InputImage.fromFilePath(file.path);
+      final List<Barcode> barcodes = await barcodeScanner.processImage(inputImage);
+
+      if (barcodes.isNotEmpty) {
+        for (final barcode in barcodes) {
+          final String? rawValue = barcode.rawValue;
+          if (rawValue != null) {
+            print('바코드 인식 성공: $rawValue');
+            await flutterTts.speak("바코드 인식 완료");
+            break; // 첫번째 바코드만 음성 출력 후 종료
+          }
+        }
+      } else {
+        print('바코드 인식 실패');
+        await flutterTts.speak("바코드 인식 실패");
+      }
+    } catch (e) {
+      print('바코드 인식 중 오류 발생: $e');
+      await flutterTts.speak("바코드 인식 실패");
+    } finally {
+      setState(() {
+        isProcessing = false;
+      });
+    }
   }
 
   @override
@@ -96,15 +143,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ElevatedButton(
-                    onPressed: () {
-                      // TODO: 바코드 스캔 로직 추가 가능
-                    },
+                    onPressed: isProcessing ? null : scanBarcode,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: selectedColor,
                       foregroundColor: Colors.white,
                       minimumSize: Size(200, 60),
                     ),
-                    child: Text('촬영'),
+                    child: Text(isProcessing ? '처리중...' : '촬영'),
                   ),
                   SizedBox(height: 20),
                   ElevatedButton.icon(
@@ -139,8 +184,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 onTap: () {
                   setState(() {
                     selectedColor = color;
-                    backgroundColor =
-                    color == Colors.black ? Colors.white : Colors.black;
+                    backgroundColor = color == Colors.black ? Colors.white : Colors.black;
                   });
                   Navigator.of(dialogContext).pop();
                 },

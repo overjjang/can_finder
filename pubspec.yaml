@@ -37,6 +37,9 @@ dependencies:
   image_picker: ^0.8.5+3
   flutter_localizations:
     sdk: flutter
+  google_mlkit_barcode_scanning: ^0.14.1
+  flutter_tts: ^3.8.3
+
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
