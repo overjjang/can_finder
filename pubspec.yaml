@@ -22,6 +22,7 @@ dependencies:
   flutter_tts: ^3.7.0
   permission_handler: ^11.0.0
   yolo_realtime_plugin: ^1.0.2
+  image: ^4.5.4
 
   # ML Kit 관련
   google_ml_kit: ^0.16.2
