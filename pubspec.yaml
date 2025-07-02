@@ -23,6 +23,7 @@ dependencies:
   permission_handler: ^11.0.0
   yolo_realtime_plugin: ^1.0.2
   image: ^4.5.4
+  flutter_dotenv: ^5.2.1
 
   # ML Kit 관련
   google_ml_kit: ^0.16.2
@@ -60,6 +61,7 @@ flutter:
     - assets/models/mscoco_label_map.txt
     - assets/models/1.tflite
     - assets/models/yolov5s_320.pt
+    - .env
 
 
   # To add assets to your application, add an assets section, like this:

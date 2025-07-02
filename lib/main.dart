@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'barcode.dart';          // ↩︎ 이미 올리신 바코드 스캐너
 import 'can-cam.dart';      // YOLO-캡쳐 화면이 필요하다면 추가로 import
 import 'package:flutter_gemini/flutter_gemini.dart'; // Gemini API 사용을 위한 패키지
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() {
-  Gemini.init(apiKey: 'api-key');
+Future<void> main() async {
+  await dotenv.load(); // .env 파일 로드
+  Gemini.init(apiKey: dotenv.env['GEMINI_API_KEY'] ?? '');
   runApp(const CanFinderApp());
     }
 
