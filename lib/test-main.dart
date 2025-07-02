@@ -49,7 +49,7 @@ import 'package:flutter/material.dart';
                       // 버튼 클릭 시 카메라 화면으로 이동
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => const CanCam(),
+                          builder: (context) => const YoloCameraScreen(),
                         ),
                       );
                     },
