@@ -1,9 +1,12 @@
+import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:yolo_realtime_plugin/yolo_realtime_plugin.dart';
 import 'dart:ui' as ui;
 import 'package:image/image.dart' as img;
 import 'dart:developer' as developer;
+import 'package:flutter_gemini/flutter_gemini.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 class YoloCameraScreen extends StatefulWidget {
   const YoloCameraScreen({Key? key}) : super(key: key);
@@ -214,15 +217,111 @@ class _YoloCameraScreenState extends State<YoloCameraScreen> {
   ];
 }
 
-class CroppedImageScreen extends StatelessWidget {
+class CroppedImageScreen extends StatefulWidget {
   final Uint8List imageBytes;
   const CroppedImageScreen({required this.imageBytes, Key? key}) : super(key: key);
 
   @override
+  State<CroppedImageScreen> createState() => _CroppedImageScreenState();
+}
+
+class _CroppedImageScreenState extends State<CroppedImageScreen> {
+  final gemini = Gemini.instance;
+  String _analysisResult = "분석 중...";
+  bool _isAnalyzing = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _analyzeImage();
+  }
+
+  Future<void> _analyzeImage() async {
+    try {
+      final prompt =
+          "아래 이미지를 분석하여 캔, 병, 컵 등의 음료 용기를 인식하고, "
+          "추정되는 브렌드, 종류, 기타 사항를 괄호 안에(브렌드, 종류, 기타 사항) 형태로 표시해주세요. ";
+          "예시: (코카콜라, 코크 제로 캔,기타 사항), (펩시, 펩시 제로 라임 병,기타 사항)";
+
+      final response = await gemini.textAndImage(
+        text: prompt,
+        images: [widget.imageBytes], // Uint8List 그대로 넣기
+      );
+
+      developer.log('Gemini API 응답: ${response?.output}');
+
+      setState(() {
+        _analysisResult = response?.output ?? "분석 결과를 가져올 수 없습니다.";
+        _isAnalyzing = false;
+      });
+    } catch (e) {
+      developer.log('이미지 분석 오류: $e');
+      setState(() {
+        _analysisResult = "분석 중 오류가 발생했습니다: $e";
+        _isAnalyzing = false;
+      });
+    }
+  }
+
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('크롭된 이미지')),
-      body: Center(child: Image.memory(imageBytes)),
+      appBar: AppBar(
+          title: const Text('분석 결과'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.of(context).pop();
+      },
+    ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Expanded(
+              flex: 3,
+              child: Image.memory(widget.imageBytes),
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              flex: 2,
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: _isAnalyzing
+                    ? const Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 16),
+                      Text('이미지 분석 중...'),
+                    ],
+                  ),
+                )
+                    : SingleChildScrollView(
+                  child: Text(
+                    _analysisResult,
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // 이전 화면으로 돌아가기
+              },
+              child: const Text('다시 스캔하기'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

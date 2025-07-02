@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'barcode.dart';          // ↩︎ 이미 올리신 바코드 스캐너
-// import 'can_cam.dart';      // YOLO-캡쳐 화면이 필요하다면 추가로 import
+import 'can-cam.dart';      // YOLO-캡쳐 화면이 필요하다면 추가로 import
+import 'package:flutter_gemini/flutter_gemini.dart'; // Gemini API 사용을 위한 패키지
 
-void main() => runApp(const CanFinderApp());
+void main() {
+  Gemini.init(apiKey: 'api-key');
+  runApp(const CanFinderApp());
+    }
 
 /// ─────────────────────────────────────────────────────────────
 ///  전체 앱(테마·라우팅) ─ MyApp 대체 버전
@@ -41,6 +45,7 @@ class _ShellState extends State<_Shell> {
   late final List<Widget> _pages = [
     const _HomePage(),
     const BarcodeScannerPage(),
+    const YoloCameraScreen(),  // can-cam.dart의 YoloCameraScreen 추가
     const _SettingsPage(),
   ];
 
@@ -64,6 +69,11 @@ class _ShellState extends State<_Shell> {
             icon: Icon(Icons.qr_code_scanner_outlined),
             selectedIcon: Icon(Icons.qr_code_scanner),
             label: 'Scan',
+          ),
+          NavigationDestination(
+              icon: Icon(Icons.camera),
+              selectedIcon: Icon(Icons.camera_alt),
+              label: "YOLO Capture",
           ),
           NavigationDestination(
             icon: Icon(Icons.settings_outlined),
