@@ -16,7 +16,7 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
-  tflite_v2: ^1.0.0
+#  tflite_v2: ^1.0.0
   image_picker: ^0.8.5+3
   camera: ^0.10.5+2
   flutter_tts: ^3.7.0
@@ -26,9 +26,9 @@ dependencies:
   flutter_dotenv: ^5.2.1
 
   # ML Kit 관련
-  google_ml_kit: ^0.16.2
-  google_mlkit_barcode_scanning: ^0.10.0
-  google_mlkit_smart_reply: ^0.10.0 # 💥 직접 명시해서 오류 제거
+#  google_ml_kit: ^0.16.2
+  google_mlkit_barcode_scanning: ^0.14.1
+  google_mlkit_smart_reply: ^0.13.0 # 💥 직접 명시해서 오류 제거
   flutter_gemini: ^3.0.0
   http: ^1.2.1
 
@@ -51,8 +51,8 @@ flutter_launcher_icons:
     generate: false
 
 # 🛠️ 충돌 방지용 override
-dependency_overrides:
-  google_mlkit_smart_reply: ^0.10.0
+#dependency_overrides:
+#  google_mlkit_smart_reply: ^0.11.0
 
 flutter:
   uses-material-design: true

@@ -6,7 +6,12 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 Future<void> main() async {
   await dotenv.load(); // .env 파일 로드
-  Gemini.init(apiKey: dotenv.env['GEMINI_API_KEY'] ?? '');
+  if(dotenv.env['GEMINI_API_KEY'] == null) {
+    throw Exception('GEMINI_API_KEY is not set in .env file');
+    // 사용자에게 GEMINI_API_KEY가 설정되지 않았음을 알림
+  } else{
+    Gemini.init(apiKey: dotenv.env['GEMINI_API_KEY'] ?? '');
+  }
   runApp(const CanFinderApp());
     }
 
