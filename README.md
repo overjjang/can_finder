@@ -8,4 +8,4 @@
 ## 실행
 실행 시 각종 종속성의 네임스페이스 오류가 뿜어져나올 수 있습니다. 주의하십시오.
 ## 마무리
-![image](https://github.com/user-attachments/assets/80f4c124-b4d8-403f-8cb2-6bd060a28f87)
+![나는플러터가싫어요](https://github.com/user-attachments/assets/a90daf3a-5b1e-44ff-9170-f535b23db3c9)
